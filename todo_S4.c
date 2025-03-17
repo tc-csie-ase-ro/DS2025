@@ -53,6 +53,18 @@ void insertAtEnd(Node** start, Car car) {
 	}
 }
 
+Car deleteFromBeginning(Node** start) {
+
+	Node* deleted = *start;
+	*start = (*start)->next;
+
+	Car deletedCar = deleted->car;
+	free(deleted);
+
+	return deletedCar;
+}
+
+
 void printCar(Car car) {
 	printf("%s from %d has %5.2f\n", car.manufacturer, car.year, car.cc);
 }
@@ -106,9 +118,6 @@ void readCarsFromFile(Node** start, int* noCars, const char* fileName) {
 
 }
 
-
-
-
 int main() {
 
 	int noCars = 0;
@@ -116,6 +125,17 @@ int main() {
 
 	readCarsFromFile(&list, &noCars, "cars.txt");
 	parseListAndPrint(list);
+
+	printf("-------------------\n");
+
+	Car deletedCar = deleteFromBeginning(&list);
+
+	parseListAndPrint(list);
+
+	printf("-------------------\n");
+
+	printCar(deletedCar);
+	free(deletedCar.manufacturer);
 
 	return 0;
 }
