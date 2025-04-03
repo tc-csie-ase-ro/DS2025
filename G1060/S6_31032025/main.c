@@ -30,7 +30,7 @@ struct HashTable {
 // key can be whatever we want
 int hash(int hashTableSize, char* key) {
 	int sum = 0;
-	for (int i = 0; i < hashTableSize; i++) {
+	for (int i = 0; i < strlen(key); i++) {
 		sum += key[i];
 	}
 	return sum % hashTableSize;
