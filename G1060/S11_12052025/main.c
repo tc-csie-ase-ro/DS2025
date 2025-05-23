@@ -1,8 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <string.h>
+#include <malloc.h>
 #include <stdio.h>
 
 #define LINESIZE 128
@@ -144,10 +144,83 @@ void readAllFromFile(TreeNode** tree, const char* filename) {
 	}
 }
 
+FP deleteTreeNode(TreeNode** root, int id) {
+    FP deletedFP = { -1, NULL };
+
+    if (!root || !*root) {
+        return deletedFP;
+    }
+
+    if (id < (*root)->fp.id) {
+        deletedFP = deleteTreeNode(&(*root)->left, id);
+    } else if (id > (*root)->fp.id) {
+        deletedFP = deleteTreeNode(&(*root)->right, id);
+    } else {
+        // Node found
+        deletedFP = (*root)->fp; // Copy the FP to return
+
+        // Node has one or no children
+        if (!(*root)->left || !(*root)->right) {
+            TreeNode* temp = (*root)->left ? (*root)->left : (*root)->right;
+            free(*root);
+            *root = temp;
+        } else {
+            // Node has two children: find inorder successor
+            TreeNode* successor = (*root)->right;
+            while (successor->left) {
+                successor = successor->left;
+            }
+
+            // Replace current node's FP with successor's
+            (*root)->fp.id = successor->fp.id;
+            (*root)->fp.filename = successor->fp.filename;
+
+            // Now delete the successor node (we don't free its filename)
+            deleteTreeNode(&(*root)->right, successor->fp.id);
+        }
+    }
+
+    // Rebalance
+    if (*root) {
+        int balance = balanceFactor(*root);
+
+        if (balance == 2) {
+            if (balanceFactor((*root)->right) >= 0) {
+                rotateLeft(root);
+            } else {
+                rotateRight(&(*root)->right);
+                rotateLeft(root);
+            }
+        }
+
+        if (balance == -2) {
+            if (balanceFactor((*root)->left) <= 0) {
+                rotateRight(root);
+            } else {
+                rotateLeft(&(*root)->left);
+                rotateRight(root);
+            }
+        }
+    }
+
+    return deletedFP;
+}
+
+
 int main() {
 	TreeNode* tree = NULL;
 	readAllFromFile(&tree, "files.txt");
 	printTree(tree, 20);
+
+	printf("\n\n----------------------------------------------------\n\n");
+	FP deleted = deleteTreeNode(&tree, 7);
+	printTree(tree, 20);
+
+
+	printf("\n\n----------------------------------------------------\n\n");
+	deleted = deleteTreeNode(&tree, 11);
+	printTree(tree, 20);
+
 	return 0;
 }
 
